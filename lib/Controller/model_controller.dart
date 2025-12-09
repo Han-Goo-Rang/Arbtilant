@@ -21,18 +21,18 @@ class ModelController {
   Future<List<Map<String, dynamic>>> runModelOnImage(String imagePath) async {
     if (_interpreter == null) throw Exception("Model not loaded");
 
-    // Load image and preprocess
+    
     final image = await _loadImage(imagePath);
     final input = _preprocessImage(image);
 
-    // Run inference
+   
     final output = List.filled(
       1 * _labels!.length,
       0.0,
     ).reshape([1, _labels!.length]);
     _interpreter!.run(input, output);
 
-    // Process output
+    
     final results = <Map<String, dynamic>>[];
     final probabilities = output[0] as List<double>;
     final sortedIndices = List.generate(probabilities.length, (i) => i)
@@ -56,11 +56,11 @@ class ModelController {
   }
 
   List<List<List<List<double>>>> _preprocessImage(Uint8List imageBytes) {
-    // Decode image and resize to model input size (assuming 224x224)
+    // Decode image dan risize ukuran input model nya asumsi ke 224 x 224 
     final image = img.decodeImage(imageBytes)!;
     final resized = img.copyResize(image, width: 224, height: 224);
 
-    // Convert to float32 and normalize
+    
     final input = List.generate(
       1,
       (i) => List.generate(
