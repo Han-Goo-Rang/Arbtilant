@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import '../core/constants/colors.dart';
-import '../Pages/scan_page.dart';
-import '../Pages/library_page_new.dart';
-import '../Pages/history_page.dart';
-import '../Widgets/custom_bottom_nav.dart';
+import 'package:arbtilant/core/design_system/index.dart';
+import 'package:arbtilant/Pages/scan_page.dart';
+import 'package:arbtilant/Pages/library_page_new.dart';
+import 'package:arbtilant/Pages/history_page.dart';
+import 'package:arbtilant/Widgets/custom_bottom_nav.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -22,17 +21,17 @@ class _HomePageState extends State<HomePage> {
     });
 
     if (index == 1) {
-      Navigator.push(
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const ScanPage()),
       );
     } else if (index == 2) {
-      Navigator.push(
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const LibraryPageNew()),
       );
     } else if (index == 3) {
-      Navigator.push(
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const HistoryPage()),
       );
@@ -42,175 +41,20 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.darkBg,
+      backgroundColor: AppColors.darkBackground,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             children: [
-              // Header with logo
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 20,
-                ),
-                child: Row(
-                  children: [
-                    Image.asset('assets/logo.png', width: 40, height: 40),
-                    const SizedBox(width: 12),
-                    Text(
-                      'Arbtilant',
-                      style: GoogleFonts.poppins(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textWhite,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Illustration with logo
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Image.asset(
-                  'assets/logo.png',
-                  width: 240,
-                  height: 240,
-                  fit: BoxFit.contain,
-                ),
-              ),
-
-              const SizedBox(height: 32),
-
-              // Scan Button
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ScanPage(),
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.camera_alt, size: 20),
-                    label: Text(
-                      'Scan Plant',
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.brightGreen,
-                      foregroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 32),
-
-              // Quick Actions
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _buildQuickAction(
-                          icon: Icons.library_books,
-                          label: 'Disease\nLibrary',
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const LibraryPageNew(),
-                              ),
-                            );
-                          },
-                        ),
-                        _buildQuickAction(
-                          icon: Icons.favorite,
-                          label: 'My Plants',
-                          onTap: () {},
-                        ),
-                        _buildQuickAction(
-                          icon: Icons.history,
-                          label: 'Recent',
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const HistoryPage(),
-                              ),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 32),
-
-              // Recent Scans Section
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.eco, color: AppColors.brightGreen, size: 20),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Recent Scans',
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textWhite,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppColors.darkBgSecondary,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        'No recent scans yet',
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          color: AppColors.textGray,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 32),
+              _buildWelcomeSection(),
+              _buildGreetingCard(),
+              _buildStatsSection(),
+              _buildQuickActionsSection(),
+              const SizedBox(height: AppSpacing.lg),
             ],
           ),
         ),
       ),
-
-      // Bottom Navigation
       bottomNavigationBar: CustomBottomNav(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
@@ -218,35 +62,334 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildQuickAction({
-    required IconData icon,
+  Widget _buildWelcomeSection() {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.lg,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'WELCOME BACK',
+                style: AppTypography.bodySmall(color: AppColors.textSecondary),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Text('Green Thumb', style: AppTypography.headline()),
+            ],
+          ),
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppColors.lightSurface,
+            ),
+            child: Icon(Icons.person, color: AppColors.brightGreen),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGreetingCard() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [AppColors.primaryGreen, AppColors.lightGreen],
+          ),
+          borderRadius: BorderRadius.circular(AppSpacing.cardBorderRadius),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Good Morning,\nGreen Thumb.',
+              style: AppTypography.displayMedium(color: AppColors.textPrimary),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              'Ready to check your plants today?',
+              style: AppTypography.bodyLarge(color: AppColors.textPrimary),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            GestureDetector(
+              onTap: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ScanPage()),
+                );
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.sm,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.textPrimary.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(
+                    AppSpacing.buttonBorderRadius,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.camera_alt,
+                      color: AppColors.textPrimary,
+                      size: 20,
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Text(
+                      'Start New Scan',
+                      style: AppTypography.bodyMedium(
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Icon(
+                      Icons.arrow_forward,
+                      color: AppColors.textPrimary,
+                      size: 16,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatsSection() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.lg,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildStatCard(
+              label: 'SAVED',
+              value: '12',
+              icon: Icons.bookmark,
+              color: AppColors.brightGreen,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: _buildStatCard(
+              label: 'ACTIVITY',
+              value: '5',
+              icon: Icons.trending_up,
+              color: AppColors.brightGreen,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: _buildStatCard(
+              label: 'PEND',
+              value: '2',
+              icon: Icons.pending_actions,
+              color: AppColors.warning,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatCard({
     required String label,
+    required String value,
+    required IconData icon,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppSpacing.cardBorderRadius),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: color, size: 24),
+          const SizedBox(height: AppSpacing.md),
+          Text(value, style: AppTypography.displayMedium()),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            label,
+            style: AppTypography.bodySmall(color: AppColors.textSecondary),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickActionsSection() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Quick Actions', style: AppTypography.headline()),
+          const SizedBox(height: AppSpacing.md),
+          _buildActionCard(
+            title: 'Diagnose Disease',
+            description: 'Identify issues instantly with our AI scanner.',
+            icon: Icons.eco,
+            onTap: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const ScanPage()),
+              );
+            },
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Row(
+            children: [
+              Expanded(
+                child: _buildSmallActionCard(
+                  title: 'Encyclopedia',
+                  description: 'Browse 100+ plant species.',
+                  icon: Icons.library_books,
+                  onTap: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const LibraryPageNew(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: _buildSmallActionCard(
+                  title: 'My Garden',
+                  description: 'View past reports & history.',
+                  icon: Icons.history,
+                  onTap: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const HistoryPage(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionCard({
+    required String title,
+    required String description,
+    required IconData icon,
     required VoidCallback onTap,
   }) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: Column(
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(AppSpacing.cardBorderRadius),
+          border: Border.all(color: AppColors.lightSurface, width: 1),
+        ),
+        child: Row(
           children: [
             Container(
-              width: 60,
-              height: 60,
+              width: 56,
+              height: 56,
               decoration: BoxDecoration(
-                color: AppColors.darkBgSecondary,
-                shape: BoxShape.circle,
+                color: AppColors.brightGreen.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(
+                  AppSpacing.buttonBorderRadius,
+                ),
               ),
               child: Icon(icon, color: AppColors.brightGreen, size: 28),
             ),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: AppColors.textWhite,
-                height: 1.2,
+            const SizedBox(width: AppSpacing.lg),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: AppTypography.headline()),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    description,
+                    style: AppTypography.bodySmall(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
               ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios,
+              color: AppColors.brightGreen,
+              size: 16,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSmallActionCard({
+    required String title,
+    required String description,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(AppSpacing.cardBorderRadius),
+          border: Border.all(color: AppColors.lightSurface, width: 1),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: AppColors.brightGreen.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(
+                  AppSpacing.buttonBorderRadius,
+                ),
+              ),
+              child: Icon(icon, color: AppColors.brightGreen, size: 20),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Text(title, style: AppTypography.label()),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              description,
+              style: AppTypography.bodySmall(color: AppColors.textSecondary),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),

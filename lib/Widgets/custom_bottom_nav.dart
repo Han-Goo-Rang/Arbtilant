@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:arbtilant/core/constants/colors.dart';
+import 'package:arbtilant/core/design_system/index.dart';
 
 class CustomBottomNav extends StatelessWidget {
   final int currentIndex;
@@ -16,11 +16,12 @@ class CustomBottomNav extends StatelessWidget {
     return BottomNavigationBar(
       currentIndex: currentIndex,
       onTap: onTap,
-      backgroundColor: AppColors.darkBgSecondary,
+      backgroundColor: AppColors.surface,
       selectedItemColor: AppColors.brightGreen,
-      unselectedItemColor: AppColors.textGray,
+      unselectedItemColor: AppColors.textSecondary,
       showUnselectedLabels: true,
       type: BottomNavigationBarType.fixed,
+      elevation: AppSpacing.elevation2,
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: 'Home'),
         BottomNavigationBarItem(

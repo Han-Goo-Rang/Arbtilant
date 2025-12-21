@@ -2,28 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:arbtilant/Pages/splash_screen.dart';
 import 'package:arbtilant/Services/hive_service.dart';
 import 'package:arbtilant/Services/disease_service.dart';
+import 'package:arbtilant/core/design_system/index.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  print('🚀 App starting...');
-
   // Initialize Hive (local storage)
   try {
-    print('📦 Initializing Hive...');
     await HiveService().init();
-    print('✅ Hive initialized');
   } catch (e) {
-    print('❌ Hive initialization failed: $e');
+    debugPrint('❌ Hive initialization failed: $e');
   }
 
   // Initialize diseases
   try {
-    print('🦠 Initializing diseases...');
     await DiseaseService().initializeDiseases();
-    print('✅ Diseases initialized');
   } catch (e) {
-    print('❌ Disease initialization failed: $e');
+    debugPrint('❌ Disease initialization failed: $e');
   }
 
   // TODO: Enable Supabase after proper configuration
@@ -34,9 +29,9 @@ void main() async {
   try {
     await SupabaseService().init();
     final isConnected = await SupabaseService().isConnected();
-    print('Supabase connected: $isConnected');
+    debugPrint('Supabase connected: $isConnected');
   } catch (e) {
-    print('Supabase initialization failed: $e');
+    debugPrint('Supabase initialization failed: $e');
   }
   SyncService().startPeriodicSync(interval: const Duration(minutes: 5));
   */
@@ -52,10 +47,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Arbtilant',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
+      theme: AppTheme.lightTheme,
       home: const SplashScreen(),
     );
   }

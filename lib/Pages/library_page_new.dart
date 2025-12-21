@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:arbtilant/Models/disease_model.dart';
 import 'package:arbtilant/Services/disease_service.dart';
-import 'package:arbtilant/core/constants/colors.dart';
+import 'package:arbtilant/core/design_system/index.dart';
 import 'package:arbtilant/Pages/disease_detail_page.dart';
 import 'package:arbtilant/Widgets/custom_bottom_nav.dart';
 import 'package:arbtilant/Pages/home_page.dart';
@@ -100,19 +99,16 @@ class _LibraryPageNewState extends State<LibraryPageNew> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.darkBg,
+      backgroundColor: AppColors.darkBackground,
       appBar: AppBar(
-        backgroundColor: AppColors.darkBgSecondary,
+        backgroundColor: AppColors.surface,
         elevation: 0,
         centerTitle: true,
-        title: Text(
-          'Disease library',
-          style: GoogleFonts.poppins(
-            color: AppColors.textWhite,
-            fontWeight: FontWeight.w600,
-            fontSize: 18,
-          ),
-        ),
+        title: Text('Disease Library', style: AppTypography.headline()),
+        leading: const SizedBox(),
+        actions: [
+          IconButton(icon: const Icon(Icons.settings), onPressed: () {}),
+        ],
       ),
       body: _isLoading
           ? Center(
@@ -120,132 +116,61 @@ class _LibraryPageNewState extends State<LibraryPageNew> {
             )
           : Column(
               children: [
-                // Search Bar
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _searchController,
-                          onChanged: (_) => _filterDiseases(),
-                          style: GoogleFonts.poppins(
-                            color: AppColors.textWhite,
-                          ),
-                          decoration: InputDecoration(
-                            hintText: 'Arbtilant',
-                            hintStyle: GoogleFonts.poppins(
-                              color: AppColors.textGray,
-                            ),
-                            prefixIcon: Icon(
-                              Icons.search,
-                              color: AppColors.textGray,
-                            ),
-                            filled: true,
-                            fillColor: Colors.white,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(24),
-                              borderSide: BorderSide.none,
-                            ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 12,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: AppColors.brightGreen,
-                          shape: BoxShape.circle,
-                        ),
-                        child: IconButton(
-                          icon: const Icon(Icons.tune, color: Colors.black),
-                          onPressed: () {},
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                // Category Filter
-                SizedBox(
-                  height: 50,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: _categories.length,
-                    itemBuilder: (context, index) {
-                      final category = _categories[index];
-                      final isSelected = _selectedCategory == category;
-
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8.0),
-                        child: FilterChip(
-                          label: Text(
-                            category,
-                            style: GoogleFonts.poppins(
-                              color: isSelected
-                                  ? Colors.black
-                                  : AppColors.textGray,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          backgroundColor: isSelected
-                              ? AppColors.brightGreen
-                              : AppColors.darkBgSecondary,
-                          onSelected: (selected) {
-                            setState(() {
-                              _selectedCategory = category;
-                            });
-                            _filterDiseases();
-                          },
-                        ),
-                      );
-                    },
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                // Disease Grid
+                _buildSearchBar(),
+                _buildCategoryFilter(),
                 Expanded(
                   child: _filteredDiseases.isEmpty
-                      ? Center(
+                      ? _buildEmptyState()
+                      : SingleChildScrollView(
                           child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Icon(
-                                Icons.search_off,
-                                size: 64,
-                                color: AppColors.textGray,
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.lg,
+                                  vertical: AppSpacing.lg,
+                                ),
+                                child: Text(
+                                  'POPULAR DIAGNOSES',
+                                  style: AppTypography.bodySmall(
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
                               ),
-                              const SizedBox(height: 16),
-                              Text(
-                                'No diseases found',
-                                style: GoogleFonts.poppins(
-                                  color: AppColors.textGray,
-                                  fontSize: 16,
+                              GridView.builder(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.lg,
+                                ),
+                                gridDelegate:
+                                    const SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: 3,
+                                      crossAxisSpacing: AppSpacing.md,
+                                      mainAxisSpacing: AppSpacing.md,
+                                      childAspectRatio: 0.85,
+                                    ),
+                                itemCount: _filteredDiseases.length,
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemBuilder: (context, index) {
+                                  final disease = _filteredDiseases[index];
+                                  return _buildDiseaseCard(disease);
+                                },
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: AppSpacing.lg,
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    'LOAD MORE DISEASES',
+                                    style: AppTypography.bodySmall(
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ],
                           ),
-                        )
-                      : GridView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 3,
-                                crossAxisSpacing: 12,
-                                mainAxisSpacing: 12,
-                                childAspectRatio: 0.85,
-                              ),
-                          itemCount: _filteredDiseases.length,
-                          itemBuilder: (context, index) {
-                            final disease = _filteredDiseases[index];
-                            return _buildDiseaseCard(disease);
-                          },
                         ),
                 ),
               ],
@@ -253,6 +178,98 @@ class _LibraryPageNewState extends State<LibraryPageNew> {
       bottomNavigationBar: CustomBottomNav(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
+      ),
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              controller: _searchController,
+              onChanged: (_) => _filterDiseases(),
+              style: AppTypography.bodyLarge(),
+              decoration: InputDecoration(
+                hintText: 'Search diseases, symptoms...',
+                hintStyle: AppTypography.bodyMedium(
+                  color: AppColors.textTertiary,
+                ),
+                prefixIcon: Icon(Icons.search, color: AppColors.textSecondary),
+                filled: true,
+                fillColor: AppColors.surface,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(
+                    AppSpacing.cardBorderRadius,
+                  ),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.sm,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.brightGreen,
+              shape: BoxShape.circle,
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.tune, color: AppColors.darkBackground),
+              onPressed: () {},
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCategoryFilter() {
+    return SizedBox(
+      height: 50,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+        itemCount: _categories.length,
+        itemBuilder: (context, index) {
+          final category = _categories[index];
+          final isSelected = _selectedCategory == category;
+
+          return Padding(
+            padding: const EdgeInsets.only(right: AppSpacing.sm),
+            child: FilterChip(
+              label: Text(
+                category,
+                style: AppTypography.label(
+                  color: isSelected
+                      ? AppColors.darkBackground
+                      : AppColors.textSecondary,
+                ),
+              ),
+              backgroundColor: isSelected
+                  ? AppColors.brightGreen
+                  : AppColors.lightSurface,
+              selectedColor: AppColors.brightGreen,
+              onSelected: (selected) {
+                setState(() {
+                  _selectedCategory = category;
+                });
+                _filterDiseases();
+              },
+              side: BorderSide.none,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(
+                  AppSpacing.chipBorderRadius,
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -269,21 +286,21 @@ class _LibraryPageNewState extends State<LibraryPageNew> {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.darkBgSecondary,
-          borderRadius: BorderRadius.circular(12),
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(AppSpacing.cardBorderRadius),
+          border: Border.all(color: AppColors.lightSurface, width: 1),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image
             Expanded(
               child: Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: AppColors.darkBgTertiary,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(12),
-                    topRight: Radius.circular(12),
+                  color: AppColors.lightSurface,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(AppSpacing.cardBorderRadius),
+                    topRight: Radius.circular(AppSpacing.cardBorderRadius),
                   ),
                 ),
                 child: disease.imageUrl != null && disease.imageUrl!.isNotEmpty
@@ -293,52 +310,45 @@ class _LibraryPageNewState extends State<LibraryPageNew> {
                         errorBuilder: (context, error, stackTrace) {
                           return Icon(
                             Icons.image_not_supported,
-                            color: AppColors.textGray,
-                            size: 32,
+                            color: AppColors.textTertiary,
                           );
                         },
                       )
                     : Icon(
                         Icons.image_not_supported,
-                        color: AppColors.textGray,
-                        size: 32,
+                        color: AppColors.textTertiary,
                       ),
               ),
             ),
-
-            // Info
             Padding(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(AppSpacing.sm),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     disease.name,
+                    style: AppTypography.label(),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textWhite,
-                    ),
                   ),
-                  const SizedBox(height: 2),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.check_circle,
-                        size: 12,
-                        color: AppColors.brightGreen,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
+                  const SizedBox(height: AppSpacing.xs),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.sm,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: _getSeverityColor(
                         disease.severity,
-                        style: GoogleFonts.poppins(
-                          fontSize: 10,
-                          color: AppColors.textGray,
-                        ),
+                      ).withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      disease.severity,
+                      style: AppTypography.bodySmall(
+                        color: _getSeverityColor(disease.severity),
                       ),
-                    ],
+                    ),
                   ),
                 ],
               ),
@@ -347,5 +357,38 @@ class _LibraryPageNewState extends State<LibraryPageNew> {
         ),
       ),
     );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.search_off,
+            size: AppSpacing.iconXLarge,
+            color: AppColors.textTertiary,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Text(
+            'No diseases found',
+            style: AppTypography.bodyLarge(color: AppColors.textTertiary),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _getSeverityColor(String severity) {
+    switch (severity.toLowerCase()) {
+      case 'high':
+        return AppColors.error;
+      case 'medium':
+        return AppColors.warning;
+      case 'low':
+        return AppColors.success;
+      default:
+        return AppColors.info;
+    }
   }
 }

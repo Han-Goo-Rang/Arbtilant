@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:arbtilant/Models/disease_model.dart';
-import 'package:arbtilant/core/constants/colors.dart';
+import 'package:arbtilant/core/design_system/index.dart';
+import 'package:arbtilant/core/widgets/index.dart';
+import 'package:arbtilant/Pages/scan_page.dart';
 
 class DiseaseDetailPage extends StatefulWidget {
   final DiseaseModel disease;
@@ -13,496 +14,325 @@ class DiseaseDetailPage extends StatefulWidget {
 }
 
 class _DiseaseDetailPageState extends State<DiseaseDetailPage> {
-  int _selectedTabIndex = 0;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.darkBg,
+      backgroundColor: AppColors.darkBackground,
       appBar: AppBar(
-        backgroundColor: AppColors.darkBgSecondary,
+        backgroundColor: AppColors.surface,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(
-          'Arbtilant',
-          style: GoogleFonts.poppins(
-            color: AppColors.textWhite,
-            fontWeight: FontWeight.w600,
-            fontSize: 18,
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.more_vert, color: Colors.white),
-            onPressed: () {},
-          ),
-        ],
+        title: Text('Disease Details', style: AppTypography.headline()),
+        actions: [IconButton(icon: const Icon(Icons.share), onPressed: () {})],
       ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Disease Image
-            Container(
-              width: double.infinity,
-              height: 250,
-              color: AppColors.darkBgSecondary,
-              child:
-                  widget.disease.imageUrl != null &&
-                      widget.disease.imageUrl!.isNotEmpty
-                  ? Image.asset(
-                      widget.disease.imageUrl!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Icon(
-                          Icons.image_not_supported,
-                          size: 64,
-                          color: AppColors.textGray,
-                        );
-                      },
-                    )
-                  : Icon(
-                      Icons.image_not_supported,
-                      size: 64,
-                      color: AppColors.textGray,
-                    ),
-            ),
+            // Hero Image
+            _buildHeroImage(),
 
             // Disease Info
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Name
-                  Text(
-                    widget.disease.name,
-                    style: GoogleFonts.poppins(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textWhite,
-                    ),
-                  ),
+            _buildDiseaseInfo(),
 
-                  const SizedBox(height: 4),
+            // Symptoms Section
+            _buildSymptoms(),
 
-                  // English Name
-                  Text(
-                    widget.disease.englishName,
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      color: AppColors.textGray,
-                    ),
-                  ),
+            // Causes Section
+            _buildCauses(),
 
-                  const SizedBox(height: 12),
+            // Treatment Section
+            _buildTreatment(),
 
-                  // Severity & Category
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(6),
-                          color: _getSeverityColor(widget.disease.severity),
-                        ),
-                        child: Text(
-                          widget.disease.severity.toUpperCase(),
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+            // Prevention Section
+            _buildPrevention(),
 
-            // Tab Navigation
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Row(
-                children: [
-                  _buildTab('Overview', 0),
-                  _buildTab('Symptoms', 1),
-                  _buildTab('Treatment', 2),
-                  _buildTab('Prevention', 3),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Tab Content
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: _buildTabContent(),
-            ),
-
-            const SizedBox(height: 24),
+            // Affected Plants Section
+            if (widget.disease.affectedPlants.isNotEmpty)
+              _buildAffectedPlants(),
 
             // Action Buttons
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Column(
-                children: [
-                  // Save Button
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.brightGreen,
-                        foregroundColor: Colors.black,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                      ),
-                      child: Text(
-                        'Save to My Plants',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
+            _buildActionButtons(),
 
-                  const SizedBox(height: 12),
-
-                  // Share Button
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.brightGreen,
-                        foregroundColor: Colors.black,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                      ),
-                      child: Text(
-                        'Share Results',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  // Find Products Button
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton(
-                      onPressed: () {},
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(
-                          color: AppColors.brightGreen,
-                          width: 2,
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                      ),
-                      child: Text(
-                        'Find Products',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.brightGreen,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.lg),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildTab(String label, int index) {
-    final isSelected = _selectedTabIndex == index;
+  /// Build hero image section
+  Widget _buildHeroImage() {
+    return Container(
+      width: double.infinity,
+      height: 280,
+      color: AppColors.lightSurface,
+      child:
+          widget.disease.imageUrl != null && widget.disease.imageUrl!.isNotEmpty
+          ? Image.asset(
+              widget.disease.imageUrl!,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Icon(
+                  Icons.image_not_supported,
+                  size: AppSpacing.iconXLarge,
+                  color: AppColors.textTertiary,
+                );
+              },
+            )
+          : Icon(
+              Icons.image_not_supported,
+              size: AppSpacing.iconXLarge,
+              color: AppColors.textTertiary,
+            ),
+    );
+  }
 
-    return Expanded(
-      child: GestureDetector(
-        onTap: () {
-          setState(() => _selectedTabIndex = index);
-        },
-        child: Column(
-          children: [
+  /// Build disease info section
+  Widget _buildDiseaseInfo() {
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Name
+          Text(widget.disease.name, style: AppTypography.displayMedium()),
+
+          const SizedBox(height: AppSpacing.xs),
+
+          // English Name
+          Text(widget.disease.englishName, style: AppTypography.bodyMedium()),
+
+          const SizedBox(height: AppSpacing.md),
+
+          // Severity Badge
+          AppSeverityChip(severity: widget.disease.severity),
+
+          const SizedBox(height: AppSpacing.md),
+
+          // Description
+          Text(widget.disease.description, style: AppTypography.bodyLarge()),
+
+          if (widget.disease.scientificNames.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.md),
+            Text('Scientific Names', style: AppTypography.label()),
+            const SizedBox(height: AppSpacing.sm),
             Text(
-              label,
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                color: isSelected ? AppColors.brightGreen : AppColors.textGray,
-              ),
+              widget.disease.scientificNames.join(', '),
+              style: AppTypography.bodyMedium(),
             ),
-            const SizedBox(height: 8),
-            if (isSelected) Container(height: 3, color: AppColors.brightGreen),
           ],
-        ),
+        ],
       ),
     );
   }
 
-  Widget _buildTabContent() {
-    switch (_selectedTabIndex) {
-      case 0:
-        return _buildOverviewTab();
-      case 1:
-        return _buildSymptomsTab();
-      case 2:
-        return _buildTreatmentTab();
-      case 3:
-        return _buildPreventionTab();
-      default:
-        return const SizedBox();
-    }
-  }
+  /// Build symptoms section
+  Widget _buildSymptoms() {
+    if (widget.disease.symptoms.isEmpty) return const SizedBox();
 
-  Widget _buildOverviewTab() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Descriptions',
-          style: GoogleFonts.poppins(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textWhite,
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.md,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Symptoms', style: AppTypography.headline()),
+          const SizedBox(height: AppSpacing.md),
+          ...widget.disease.symptoms.map(
+            (symptom) => _buildBulletItem(symptom),
           ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          widget.disease.description,
-          style: GoogleFonts.poppins(
-            fontSize: 14,
-            color: AppColors.textGray,
-            height: 1.6,
-          ),
-        ),
-        const SizedBox(height: 16),
-        Text(
-          'Affected Plants',
-          style: GoogleFonts.poppins(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textWhite,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: widget.disease.affectedPlants
-              .map(
-                (plant) => Chip(
-                  label: Text(
-                    plant,
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      color: Colors.black,
-                    ),
-                  ),
-                  backgroundColor: AppColors.brightGreen,
-                ),
-              )
-              .toList(),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
-  Widget _buildSymptomsTab() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Symptoms',
-          style: GoogleFonts.poppins(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textWhite,
+  /// Build causes section
+  Widget _buildCauses() {
+    if (widget.disease.causes.isEmpty) return const SizedBox();
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.md,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Causes', style: AppTypography.headline()),
+          const SizedBox(height: AppSpacing.md),
+          ...widget.disease.causes.map((cause) => _buildBulletItem(cause)),
+        ],
+      ),
+    );
+  }
+
+  /// Build treatment section
+  Widget _buildTreatment() {
+    if (widget.disease.treatment.isEmpty) return const SizedBox();
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.md,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Treatment', style: AppTypography.headline()),
+          const SizedBox(height: AppSpacing.md),
+          ...widget.disease.treatment.asMap().entries.map((entry) {
+            return _buildNumberedItem(entry.value, entry.key + 1);
+          }),
+        ],
+      ),
+    );
+  }
+
+  /// Build prevention section
+  Widget _buildPrevention() {
+    if (widget.disease.prevention.isEmpty) return const SizedBox();
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.md,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Prevention', style: AppTypography.headline()),
+          const SizedBox(height: AppSpacing.md),
+          ...widget.disease.prevention.map(
+            (prevention) => _buildBulletItem(prevention),
           ),
-        ),
-        const SizedBox(height: 12),
-        ...widget.disease.symptoms
-            .map(
-              (symptom) => Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: 8,
-                      height: 8,
-                      margin: const EdgeInsets.only(top: 6),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.brightGreen,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        symptom,
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          color: AppColors.textGray,
-                          height: 1.5,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+        ],
+      ),
+    );
+  }
+
+  /// Build affected plants section
+  Widget _buildAffectedPlants() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.md,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Affected Plants', style: AppTypography.headline()),
+          const SizedBox(height: AppSpacing.md),
+          Wrap(
+            spacing: AppSpacing.sm,
+            runSpacing: AppSpacing.sm,
+            children: widget.disease.affectedPlants
+                .map((plant) => AppChip(label: plant, isSelected: false))
+                .toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Build bullet item
+  Widget _buildBulletItem(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 8,
+            height: 8,
+            margin: const EdgeInsets.only(top: 8),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppColors.brightGreen,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(child: Text(text, style: AppTypography.bodyLarge())),
+        ],
+      ),
+    );
+  }
+
+  /// Build numbered item
+  Widget _buildNumberedItem(String text, int number) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppColors.brightGreen,
+            ),
+            child: Center(
+              child: Text(
+                '$number',
+                style: AppTypography.label(color: AppColors.darkBackground),
               ),
-            )
-            .toList(),
-      ],
-    );
-  }
-
-  Widget _buildTreatmentTab() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Treatment',
-          style: GoogleFonts.poppins(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textWhite,
+            ),
           ),
-        ),
-        const SizedBox(height: 12),
-        ...widget.disease.treatment
-            .asMap()
-            .entries
-            .map(
-              (entry) => Padding(
-                padding: const EdgeInsets.only(bottom: 12.0),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: 24,
-                      height: 24,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.brightGreen,
-                      ),
-                      child: Center(
-                        child: Text(
-                          '${entry.key + 1}',
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        entry.value,
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          color: AppColors.textGray,
-                          height: 1.5,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            )
-            .toList(),
-      ],
-    );
-  }
-
-  Widget _buildPreventionTab() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Prevention',
-          style: GoogleFonts.poppins(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textWhite,
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(top: AppSpacing.xs),
+              child: Text(text, style: AppTypography.bodyLarge()),
+            ),
           ),
-        ),
-        const SizedBox(height: 12),
-        ...widget.disease.prevention
-            .map(
-              (prevention) => Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: 8,
-                      height: 8,
-                      margin: const EdgeInsets.only(top: 6),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.brightGreen,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        prevention,
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          color: AppColors.textGray,
-                          height: 1.5,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            )
-            .toList(),
-      ],
+        ],
+      ),
     );
   }
 
-  Color _getSeverityColor(String severity) {
-    switch (severity.toLowerCase()) {
-      case 'high':
-        return Colors.red;
-      case 'medium':
-        return Colors.orange;
-      case 'low':
-        return AppColors.brightGreen;
-      default:
-        return AppColors.textGray;
-    }
+  /// Build action buttons
+  Widget _buildActionButtons() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+      child: Column(
+        children: [
+          // Scan Similar Button
+          SizedBox(
+            width: double.infinity,
+            child: AppButton(
+              label: 'Scan Similar Plant',
+              icon: Icons.camera_alt,
+              size: AppButtonSize.large,
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ScanPage()),
+                );
+              },
+            ),
+          ),
+
+          const SizedBox(height: AppSpacing.md),
+
+          // Share Button
+          SizedBox(
+            width: double.infinity,
+            child: AppButton(
+              label: 'Share',
+              icon: Icons.share,
+              size: AppButtonSize.medium,
+              variant: AppButtonVariant.outlined,
+              onPressed: () {},
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

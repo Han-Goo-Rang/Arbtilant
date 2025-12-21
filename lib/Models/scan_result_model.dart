@@ -25,7 +25,7 @@ class PredictionModel {
 class ScanResultModel {
   final String id;
   final String diseaseId;
-  final String imagePath;
+  final String imagePath; // Now stores permanent file path (not base64)
   final String predictedLabel;
   final double confidence;
   final List<PredictionModel> top3Predictions;

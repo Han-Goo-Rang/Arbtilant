@@ -4,12 +4,29 @@ import 'package:arbtilant/Models/scan_result_model.dart';
 import 'package:arbtilant/Models/feedback_model.dart';
 
 /// Helper function to safely cast Map to Map<String, dynamic>
+/// Handles nested maps recursively
 Map<String, dynamic> _castToStringDynamicMap(dynamic value) {
   if (value is Map<String, dynamic>) {
     return value;
   }
   if (value is Map) {
-    return Map<String, dynamic>.from(value);
+    final result = <String, dynamic>{};
+    value.forEach((key, val) {
+      final stringKey = key.toString();
+      if (val is Map) {
+        result[stringKey] = _castToStringDynamicMap(val);
+      } else if (val is List) {
+        result[stringKey] = val.map((item) {
+          if (item is Map) {
+            return _castToStringDynamicMap(item);
+          }
+          return item;
+        }).toList();
+      } else {
+        result[stringKey] = val;
+      }
+    });
+    return result;
   }
   throw TypeError();
 }
@@ -174,9 +191,12 @@ class HiveService {
   Future<void> saveScanResult(ScanResultModel scanResult) async {
     try {
       final box = Hive.box(scanResultsBox);
+      print('💾 Saving scan result to Hive: ${scanResult.id}');
       await box.put(scanResult.id, scanResult.toJson());
+      print('✅ Scan result saved to Hive: ${scanResult.id}');
     } catch (e) {
       print('❌ Error saving scan result: $e');
+      rethrow;
     }
   }
 

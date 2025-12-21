@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:arbtilant/pages/home_page.dart';
+import 'package:arbtilant/core/design_system/index.dart';
+import 'package:arbtilant/Pages/onboarding_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -13,11 +14,11 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
 
-    Future.delayed(const Duration(seconds: 3), () {
+    Future.delayed(const Duration(seconds: 2), () {
       if (mounted) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const HomePage()),
+          MaterialPageRoute(builder: (context) => const OnboardingScreen()),
         );
       }
     });
@@ -26,29 +27,32 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(backgroundColor: Colors.white),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          SizedBox(height: MediaQuery.of(context).size.height * 0.1),
-          Align(
-            alignment: Alignment.topCenter,
-            child: SizedBox(
-              height: MediaQuery.of(context).size.height * 0.3,
-              width: MediaQuery.of(context).size.width * 0.8,
-              child: Image.asset("assets/logo.png", fit: BoxFit.cover),
+      backgroundColor: AppColors.darkBackground,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.brightGreen.withValues(alpha: 0.1),
+              ),
+              child: Image.asset('assets/logo.png', fit: BoxFit.contain),
             ),
-          ),
-          const Text(
-            "Arbtilant",
-            style: TextStyle(
-              fontFamily: "Poppins",
-              color: Colors.black,
-              fontWeight: FontWeight.bold,
-              fontSize: 25,
+            const SizedBox(height: AppSpacing.lg),
+            Text(
+              'Arbtilant',
+              style: AppTypography.displayLarge(color: AppColors.textPrimary),
             ),
-          ),
-        ],
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              'Detect Plant Diseases',
+              style: AppTypography.bodyLarge(color: AppColors.textSecondary),
+            ),
+          ],
+        ),
       ),
     );
   }

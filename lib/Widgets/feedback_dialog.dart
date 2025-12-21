@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:arbtilant/core/constants/colors.dart';
+import 'package:arbtilant/core/design_system/index.dart';
 import 'package:arbtilant/Models/disease_model.dart';
 import 'package:arbtilant/Services/disease_service.dart';
 
@@ -68,9 +68,10 @@ class _FeedbackDialogState extends State<FeedbackDialog> {
   Widget build(BuildContext context) {
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      backgroundColor: Colors.white,
       child: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(20.0),
+          padding: const EdgeInsets.all(24.0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -78,18 +79,25 @@ class _FeedbackDialogState extends State<FeedbackDialog> {
               // Header
               Row(
                 children: [
-                  Icon(
-                    Icons.feedback_outlined,
-                    color: AppColors.mediumGreen,
-                    size: 28,
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.brightGreen.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      Icons.feedback_outlined,
+                      color: AppColors.brightGreen,
+                      size: 24,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       'Berikan Feedback',
                       style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
                         color: Colors.black,
                       ),
                     ),
@@ -97,64 +105,76 @@ class _FeedbackDialogState extends State<FeedbackDialog> {
                   IconButton(
                     icon: const Icon(Icons.close),
                     onPressed: () => Navigator.pop(context),
+                    color: Colors.grey.shade600,
                   ),
                 ],
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
 
-              // Prediction Info
+              // Prediction Info Card
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(8),
+                  color: AppColors.brightGreen.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppColors.brightGreen.withValues(alpha: 0.2),
+                  ),
                 ),
-                child: Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.eco, color: AppColors.mediumGreen),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Hasil Deteksi:',
-                            style: GoogleFonts.poppins(
-                              fontSize: 12,
-                              color: Colors.grey,
-                            ),
-                          ),
-                          Text(
-                            widget.predictedLabel,
-                            style: GoogleFonts.poppins(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.black,
-                            ),
-                          ),
-                          Text(
-                            'Confidence: ${(widget.confidence * 100).toStringAsFixed(1)}%',
-                            style: GoogleFonts.poppins(
-                              fontSize: 12,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ],
+                    Text(
+                      'Hasil Deteksi Saat Ini',
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey.shade600,
                       ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(Icons.eco, color: AppColors.brightGreen, size: 20),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                widget.predictedLabel,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Confidence: ${(widget.confidence * 100).toStringAsFixed(1)}%',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  color: Colors.grey.shade600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
 
               // Question
               Text(
                 'Apakah hasil deteksi ini benar?',
                 style: GoogleFonts.poppins(
                   fontSize: 14,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                   color: Colors.black,
                 ),
               ),
@@ -188,32 +208,54 @@ class _FeedbackDialogState extends State<FeedbackDialog> {
 
               // If incorrect, show disease selection
               if (_isCorrect == false) ...[
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
                 Text(
                   'Pilih penyakit yang benar:',
                   style: GoogleFonts.poppins(
                     fontSize: 14,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                     color: Colors.black,
                   ),
                 ),
                 const SizedBox(height: 8),
                 _isLoading
-                    ? const Center(child: CircularProgressIndicator())
+                    ? const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: CircularProgressIndicator(),
+                        ),
+                      )
                     : DropdownButtonFormField<String>(
                         initialValue: _selectedDiseaseId,
                         decoration: InputDecoration(
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(color: Colors.grey.shade300),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(color: Colors.grey.shade300),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(
+                              color: AppColors.brightGreen,
+                              width: 2,
+                            ),
                           ),
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 12,
-                            vertical: 8,
+                            vertical: 12,
                           ),
+                          filled: true,
+                          fillColor: Colors.grey.shade50,
                         ),
                         hint: Text(
                           'Pilih penyakit',
-                          style: GoogleFonts.poppins(fontSize: 14),
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            color: Colors.grey.shade600,
+                          ),
                         ),
                         items: _diseases
                             .map(
@@ -232,40 +274,45 @@ class _FeedbackDialogState extends State<FeedbackDialog> {
                       ),
               ],
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
 
               // Rating
               Text(
                 'Rating kepercayaan Anda:',
                 style: GoogleFonts.poppins(
                   fontSize: 14,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                   color: Colors.black,
                 ),
               ),
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(5, (index) {
-                  return IconButton(
-                    icon: Icon(
-                      index < _rating ? Icons.star : Icons.star_border,
-                      color: Colors.amber,
-                      size: 32,
-                    ),
-                    onPressed: () => setState(() => _rating = index + 1),
-                  );
-                }),
+              const SizedBox(height: 12),
+              Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(5, (index) {
+                    return GestureDetector(
+                      onTap: () => setState(() => _rating = index + 1),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: Icon(
+                          index < _rating ? Icons.star : Icons.star_border,
+                          color: Colors.amber,
+                          size: 32,
+                        ),
+                      ),
+                    );
+                  }),
+                ),
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
 
               // Feedback Text
               Text(
                 'Komentar (opsional):',
                 style: GoogleFonts.poppins(
                   fontSize: 14,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                   color: Colors.black,
                 ),
               ),
@@ -277,49 +324,88 @@ class _FeedbackDialogState extends State<FeedbackDialog> {
                   hintText: 'Tulis komentar Anda...',
                   hintStyle: GoogleFonts.poppins(
                     fontSize: 14,
-                    color: Colors.grey,
+                    color: Colors.grey.shade500,
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
                   ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: AppColors.brightGreen,
+                      width: 2,
+                    ),
+                  ),
+                  filled: true,
+                  fillColor: Colors.grey.shade50,
                 ),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
 
-              // Submit Button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isCorrect == null
-                      ? null
-                      : () {
-                          widget.onSubmit(
-                            _isCorrect!,
-                            _selectedDiseaseId,
-                            _feedbackController.text.isEmpty
-                                ? null
-                                : _feedbackController.text,
-                            _rating,
-                          );
-                          Navigator.pop(context);
-                        },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.mediumGreen,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+              // Action Buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: Colors.grey.shade300),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: Text(
+                        'Batal',
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
                     ),
                   ),
-                  child: Text(
-                    'Kirim Feedback',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: _isCorrect == null
+                          ? null
+                          : () {
+                              widget.onSubmit(
+                                _isCorrect!,
+                                _selectedDiseaseId,
+                                _feedbackController.text.isEmpty
+                                    ? null
+                                    : _feedbackController.text,
+                                _rating,
+                              );
+                              Navigator.pop(context);
+                            },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.brightGreen,
+                        disabledBackgroundColor: Colors.grey.shade300,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: Text(
+                        'Kirim Feedback',
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                ],
               ),
             ],
           ),
@@ -352,14 +438,18 @@ class _FeedbackDialogState extends State<FeedbackDialog> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: isSelected ? color : Colors.grey, size: 20),
+            Icon(
+              icon,
+              color: isSelected ? color : Colors.grey.shade400,
+              size: 20,
+            ),
             const SizedBox(width: 8),
             Text(
               label,
               style: GoogleFonts.poppins(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
-                color: isSelected ? color : Colors.grey,
+                color: isSelected ? color : Colors.grey.shade600,
               ),
             ),
           ],

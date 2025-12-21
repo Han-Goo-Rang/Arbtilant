@@ -1,15 +1,16 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:arbtilant/Models/scan_result_model.dart';
 import 'package:arbtilant/Services/scan_history_service.dart';
 import 'package:arbtilant/Services/feedback_service.dart';
-import 'package:arbtilant/core/constants/colors.dart';
+import 'package:arbtilant/core/design_system/index.dart';
+import 'package:arbtilant/core/widgets/index.dart';
 import 'package:arbtilant/Widgets/custom_bottom_nav.dart';
 import 'package:arbtilant/Pages/home_page.dart';
 import 'package:arbtilant/Pages/scan_page.dart';
 import 'package:arbtilant/Pages/library_page_new.dart';
+import 'package:arbtilant/Pages/scan_detail_page.dart';
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});
@@ -23,9 +24,14 @@ class _HistoryPageState extends State<HistoryPage> {
   final FeedbackService _feedbackService = FeedbackService();
 
   List<ScanResultModel> _scanResults = [];
+  List<ScanResultModel> _filteredResults = [];
   Map<String, dynamic> _stats = {};
   bool _isLoading = true;
   int _selectedIndex = 3;
+
+  // Filter options
+  String _sortBy = 'recent'; // recent, oldest, accuracy
+  String _filterDisease = 'all';
 
   @override
   void initState() {
@@ -44,10 +50,39 @@ class _HistoryPageState extends State<HistoryPage> {
         _scanResults = results;
         _stats = stats;
         _isLoading = false;
+        _applyFilters();
       });
     } catch (e) {
       setState(() => _isLoading = false);
     }
+  }
+
+  void _applyFilters() {
+    List<ScanResultModel> filtered = List.from(_scanResults);
+
+    // Apply disease filter
+    if (_filterDisease != 'all') {
+      filtered = filtered
+          .where((r) => r.predictedLabel == _filterDisease)
+          .toList();
+    }
+
+    // Apply sorting
+    switch (_sortBy) {
+      case 'recent':
+        filtered.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        break;
+      case 'oldest':
+        filtered.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+        break;
+      case 'accuracy':
+        filtered.sort((a, b) => b.confidence.compareTo(a.confidence));
+        break;
+    }
+
+    setState(() {
+      _filteredResults = filtered;
+    });
   }
 
   Future<void> _deleteResult(String id) async {
@@ -231,49 +266,19 @@ class _HistoryPageState extends State<HistoryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.darkBg,
+      backgroundColor: AppColors.darkBackground,
       appBar: AppBar(
-        backgroundColor: AppColors.darkBgSecondary,
+        backgroundColor: AppColors.surface,
         elevation: 0,
         centerTitle: true,
-        title: Text(
-          'Riwayat Deteksi',
-          style: GoogleFonts.poppins(
-            color: AppColors.textWhite,
-            fontWeight: FontWeight.w600,
-            fontSize: 18,
-          ),
-        ),
+        title: Text('Riwayat Deteksi', style: AppTypography.headline()),
+        leading: const SizedBox(),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.white),
+            icon: const Icon(Icons.refresh),
             onPressed: _loadData,
             tooltip: 'Refresh',
           ),
-          // TODO: Enable after Supabase is properly configured
-          /*
-          IconButton(
-            icon: const Icon(Icons.info_outline, color: Colors.white),
-            onPressed: _testSupabaseConnection,
-            tooltip: 'Test Supabase',
-          ),
-          IconButton(
-            icon: _isSyncing
-                ? SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        AppColors.brightGreen,
-                      ),
-                    ),
-                  )
-                : const Icon(Icons.cloud_upload, color: Colors.white),
-            onPressed: _isSyncing ? null : _manualSync,
-            tooltip: 'Sync ke cloud',
-          ),
-          */
         ],
       ),
       body: _isLoading
@@ -282,18 +287,16 @@ class _HistoryPageState extends State<HistoryPage> {
             )
           : Column(
               children: [
-                // Stats Card
                 _buildStatsCard(),
-
-                // History List
+                _buildFilterBar(),
                 Expanded(
-                  child: _scanResults.isEmpty
+                  child: _filteredResults.isEmpty
                       ? _buildEmptyState()
                       : ListView.builder(
-                          padding: const EdgeInsets.all(16),
-                          itemCount: _scanResults.length,
+                          padding: const EdgeInsets.all(AppSpacing.md),
+                          itemCount: _filteredResults.length,
                           itemBuilder: (context, index) {
-                            return _buildHistoryCard(_scanResults[index]);
+                            return _buildHistoryCard(_filteredResults[index]);
                           },
                         ),
                 ),
@@ -308,11 +311,12 @@ class _HistoryPageState extends State<HistoryPage> {
 
   Widget _buildStatsCard() {
     return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.darkBgSecondary,
-        borderRadius: BorderRadius.circular(12),
+        color: AppColors.brightGreen.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(AppSpacing.cardBorderRadius),
+        border: Border.all(color: AppColors.brightGreen, width: 1),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -337,6 +341,131 @@ class _HistoryPageState extends State<HistoryPage> {
     );
   }
 
+  Widget _buildFilterBar() {
+    final uniqueDiseases = <String>{'all'};
+    for (var result in _scanResults) {
+      uniqueDiseases.add(result.predictedLabel);
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.md,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Urutkan',
+            style: AppTypography.bodySmall(color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _buildFilterChip(
+                  label: 'Terbaru',
+                  value: 'recent',
+                  isSelected: _sortBy == 'recent',
+                  onTap: () {
+                    setState(() {
+                      _sortBy = 'recent';
+                      _applyFilters();
+                    });
+                  },
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                _buildFilterChip(
+                  label: 'Terlama',
+                  value: 'oldest',
+                  isSelected: _sortBy == 'oldest',
+                  onTap: () {
+                    setState(() {
+                      _sortBy = 'oldest';
+                      _applyFilters();
+                    });
+                  },
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                _buildFilterChip(
+                  label: 'Akurasi Tinggi',
+                  value: 'accuracy',
+                  isSelected: _sortBy == 'accuracy',
+                  onTap: () {
+                    setState(() {
+                      _sortBy = 'accuracy';
+                      _applyFilters();
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Text(
+            'Filter Penyakit',
+            style: AppTypography.bodySmall(color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: uniqueDiseases.map((disease) {
+                return Padding(
+                  padding: const EdgeInsets.only(right: AppSpacing.sm),
+                  child: _buildFilterChip(
+                    label: disease == 'all' ? 'Semua' : disease,
+                    value: disease,
+                    isSelected: _filterDisease == disease,
+                    onTap: () {
+                      setState(() {
+                        _filterDisease = disease;
+                        _applyFilters();
+                      });
+                    },
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterChip({
+    required String label,
+    required String value,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.xs,
+        ),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.brightGreen : AppColors.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? AppColors.brightGreen : AppColors.lightSurface,
+          ),
+        ),
+        child: Text(
+          label,
+          style: AppTypography.bodySmall(
+            color: isSelected
+                ? AppColors.darkBackground
+                : AppColors.textSecondary,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildStatItem({
     required String label,
     required String value,
@@ -345,18 +474,11 @@ class _HistoryPageState extends State<HistoryPage> {
     return Column(
       children: [
         Icon(icon, color: AppColors.brightGreen, size: 24),
-        const SizedBox(height: 8),
-        Text(
-          value,
-          style: GoogleFonts.poppins(
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-            color: AppColors.textWhite,
-          ),
-        ),
+        const SizedBox(height: AppSpacing.sm),
+        Text(value, style: AppTypography.headline()),
         Text(
           label,
-          style: GoogleFonts.poppins(fontSize: 12, color: AppColors.textGray),
+          style: AppTypography.bodySmall(color: AppColors.textSecondary),
         ),
       ],
     );
@@ -367,16 +489,25 @@ class _HistoryPageState extends State<HistoryPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.history, size: 64, color: AppColors.textGray),
-          const SizedBox(height: 16),
-          Text(
-            'Belum ada riwayat scan',
-            style: GoogleFonts.poppins(fontSize: 16, color: AppColors.textGray),
-          ),
-          const SizedBox(height: 8),
+          Icon(Icons.history, size: 80, color: AppColors.textTertiary),
+          const SizedBox(height: AppSpacing.md),
+          Text('Belum ada riwayat scan', style: AppTypography.headline()),
+          const SizedBox(height: AppSpacing.sm),
           Text(
             'Mulai scan tanaman untuk melihat riwayat',
-            style: GoogleFonts.poppins(fontSize: 14, color: AppColors.textGray),
+            style: AppTypography.bodyMedium(color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: AppSpacing.xxl),
+          AppButton(
+            label: 'Mulai Scan',
+            icon: Icons.camera_alt,
+            size: AppButtonSize.large,
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const ScanPage()),
+              );
+            },
           ),
         ],
       ),
@@ -391,93 +522,98 @@ class _HistoryPageState extends State<HistoryPage> {
       direction: DismissDirection.endToStart,
       background: Container(
         alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 20),
-        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.only(right: AppSpacing.md),
+        margin: const EdgeInsets.only(bottom: AppSpacing.md),
         decoration: BoxDecoration(
-          color: Colors.red,
-          borderRadius: BorderRadius.circular(12),
+          color: AppColors.error,
+          borderRadius: BorderRadius.circular(AppSpacing.cardBorderRadius),
         ),
-        child: const Icon(Icons.delete, color: Colors.white),
+        child: const Icon(Icons.delete, color: AppColors.textPrimary),
       ),
       onDismissed: (_) => _deleteResult(result.id),
-      child: Card(
-        margin: const EdgeInsets.only(bottom: 12),
-        color: AppColors.darkBgSecondary,
-        elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            children: [
-              // Image
-              Container(
-                width: 70,
-                height: 70,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  color: AppColors.darkBgTertiary,
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child:
-                      result.imagePath.isNotEmpty &&
-                          File(result.imagePath).existsSync()
-                      ? Image.file(File(result.imagePath), fit: BoxFit.cover)
-                      : Icon(
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ScanDetailPage(scanResult: result),
+            ),
+          );
+        },
+        child: AppCard(
+          margin: const EdgeInsets.only(bottom: AppSpacing.md),
+          isClickable: true,
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            child: Row(
+              children: [
+                Container(
+                  width: 70,
+                  height: 70,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(
+                      AppSpacing.cardBorderRadius,
+                    ),
+                    color: AppColors.lightSurface,
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(
+                      AppSpacing.cardBorderRadius,
+                    ),
+                    child: FutureBuilder<File?>(
+                      future: _scanHistoryService.getImageFile(result),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.done &&
+                            snapshot.data != null) {
+                          return Image.file(snapshot.data!, fit: BoxFit.cover);
+                        }
+                        return Icon(
                           Icons.image_not_supported,
-                          color: AppColors.textGray,
-                        ),
+                          color: AppColors.textTertiary,
+                        );
+                      },
+                    ),
+                  ),
                 ),
-              ),
-
-              const SizedBox(width: 12),
-
-              // Info
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      result.predictedLabel,
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textWhite,
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        result.predictedLabel,
+                        style: AppTypography.headline(),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      dateFormat.format(result.createdAt),
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        color: AppColors.textGray,
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        dateFormat.format(result.createdAt),
+                        style: AppTypography.bodySmall(
+                          color: AppColors.textSecondary,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        _buildConfidenceBadge(result.confidence),
-                        const SizedBox(width: 8),
-                        Text(
-                          'v${result.modelVersion}',
-                          style: GoogleFonts.poppins(
-                            fontSize: 10,
-                            color: AppColors.textGray,
+                      const SizedBox(height: AppSpacing.sm),
+                      Row(
+                        children: [
+                          _buildConfidenceBadge(result.confidence),
+                          const SizedBox(width: AppSpacing.sm),
+                          Text(
+                            'v${result.modelVersion}',
+                            style: AppTypography.bodySmall(
+                              color: AppColors.textTertiary,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-
-              // Arrow
-              Icon(
-                Icons.arrow_forward_ios,
-                color: AppColors.brightGreen,
-                size: 16,
-              ),
-            ],
+                Icon(
+                  Icons.arrow_forward_ios,
+                  color: AppColors.brightGreen,
+                  size: 16,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -489,28 +625,24 @@ class _HistoryPageState extends State<HistoryPage> {
     Color color;
 
     if (confidence >= 0.8) {
-      color = AppColors.brightGreen;
+      color = AppColors.success;
     } else if (confidence >= 0.5) {
-      color = Colors.orange;
+      color = AppColors.warning;
     } else {
-      color = Colors.red;
+      color = AppColors.error;
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xs,
+      ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(4),
         border: Border.all(color: color),
       ),
-      child: Text(
-        '$percentage%',
-        style: GoogleFonts.poppins(
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-          color: color,
-        ),
-      ),
+      child: Text('$percentage%', style: AppTypography.bodySmall(color: color)),
     );
   }
 }

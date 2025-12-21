@@ -1,9 +1,18 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+    
+    <!-- Permissions for camera and file storage -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    
     <application
           android:label="test"
           android:name="${applicationName}"
           android:icon="@mipmap/ic_launcher"
+          android:requestLegacyExternalStorage="true"
           tools:replace="android:label">
         <activity
             android:name=".MainActivity"
