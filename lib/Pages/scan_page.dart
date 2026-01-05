@@ -39,6 +39,11 @@ class _ScanPageState extends State<ScanPage> {
   int _selectedIndex = 1;
   late Future<void> _initCameraFuture;
 
+  // Camera mode and settings
+  String _cameraMode = 'MACRO'; // MACRO, AUTO, WIDE
+  bool _flashEnabled = false;
+  double _zoomLevel = 1.0;
+
   @override
   void initState() {
     super.initState();
@@ -492,6 +497,7 @@ class _ScanPageState extends State<ScanPage> {
                         ),
                       ),
                     ),
+                    const SizedBox(height: AppSpacing.xxl),
                   ],
                 ),
               ),
@@ -872,11 +878,11 @@ class _ScanPageState extends State<ScanPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildModeButton('MACRO', true),
+              _buildModeButton('MACRO', _cameraMode == 'MACRO'),
               const SizedBox(width: AppSpacing.lg),
-              _buildModeButton('AUTO', false),
+              _buildModeButton('AUTO', _cameraMode == 'AUTO'),
               const SizedBox(width: AppSpacing.lg),
-              _buildModeButton('WIDE', false),
+              _buildModeButton('WIDE', _cameraMode == 'WIDE'),
             ],
           ),
           const SizedBox(height: AppSpacing.lg),
@@ -885,8 +891,13 @@ class _ScanPageState extends State<ScanPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               IconButton(
-                icon: Icon(Icons.flash_off, color: AppColors.brightGreen),
-                onPressed: () {},
+                icon: Icon(
+                  _flashEnabled ? Icons.flash_on : Icons.flash_off,
+                  color: _flashEnabled
+                      ? AppColors.warning
+                      : AppColors.brightGreen,
+                ),
+                onPressed: _toggleFlash,
               ),
               GestureDetector(
                 onTap: _isProcessing ? null : _handleScan,
@@ -915,7 +926,7 @@ class _ScanPageState extends State<ScanPage> {
               ),
               IconButton(
                 icon: Icon(Icons.settings, color: AppColors.brightGreen),
-                onPressed: () {},
+                onPressed: _showCameraSettings,
               ),
             ],
           ),
@@ -925,21 +936,203 @@ class _ScanPageState extends State<ScanPage> {
   }
 
   Widget _buildModeButton(String label, bool isActive) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: AppSpacing.sm,
-      ),
-      decoration: BoxDecoration(
-        color: isActive ? AppColors.brightGreen : AppColors.lightSurface,
-        borderRadius: BorderRadius.circular(AppSpacing.buttonBorderRadius),
-      ),
-      child: Text(
-        label,
-        style: AppTypography.bodySmall(
-          color: isActive ? AppColors.darkBackground : AppColors.textSecondary,
+    return GestureDetector(
+      onTap: () => _setMode(label),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.sm,
+        ),
+        decoration: BoxDecoration(
+          color: isActive ? AppColors.brightGreen : AppColors.lightSurface,
+          borderRadius: BorderRadius.circular(AppSpacing.buttonBorderRadius),
+        ),
+        child: Text(
+          label,
+          style: AppTypography.bodySmall(
+            color: isActive
+                ? AppColors.darkBackground
+                : AppColors.textSecondary,
+          ),
         ),
       ),
     );
+  }
+
+  void _setMode(String mode) {
+    setState(() {
+      _cameraMode = mode;
+    });
+
+    // Apply zoom based on mode
+    if (_camController != null && _camController!.value.isInitialized) {
+      switch (mode) {
+        case 'MACRO':
+          _zoomLevel = 1.0; // No zoom for macro
+          break;
+        case 'AUTO':
+          _zoomLevel = 1.5; // Medium zoom
+          break;
+        case 'WIDE':
+          _zoomLevel = 0.5; // Wide angle (less zoom)
+          break;
+      }
+      _camController!.setZoomLevel(_zoomLevel);
+    }
+
+    debugPrint('📷 Camera mode changed to: $mode (zoom: $_zoomLevel)');
+  }
+
+  Future<void> _toggleFlash() async {
+    if (_camController == null || !_camController!.value.isInitialized) {
+      return;
+    }
+
+    try {
+      setState(() {
+        _flashEnabled = !_flashEnabled;
+      });
+
+      await _camController!.setFlashMode(
+        _flashEnabled ? FlashMode.torch : FlashMode.off,
+      );
+
+      debugPrint('💡 Flash: ${_flashEnabled ? 'ON' : 'OFF'}');
+    } catch (e) {
+      debugPrint('❌ Error toggling flash: $e');
+      setState(() {
+        _flashEnabled = !_flashEnabled;
+      });
+    }
+  }
+
+  void _showCameraSettings() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Padding(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Camera Settings', style: AppTypography.headline()),
+                  const SizedBox(height: AppSpacing.lg),
+
+                  // Zoom control
+                  Text('Zoom Level', style: AppTypography.label()),
+                  const SizedBox(height: AppSpacing.md),
+                  Slider(
+                    value: _zoomLevel,
+                    min: 0.5,
+                    max: 3.0,
+                    divisions: 25,
+                    label: _zoomLevel.toStringAsFixed(1),
+                    activeColor: AppColors.brightGreen,
+                    inactiveColor: AppColors.lightSurface,
+                    onChanged: (value) {
+                      setState(() {
+                        _zoomLevel = value;
+                      });
+                      if (_camController != null &&
+                          _camController!.value.isInitialized) {
+                        _camController!.setZoomLevel(value);
+                      }
+                    },
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+
+                  // Flash toggle
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Flash', style: AppTypography.label()),
+                      Switch(
+                        value: _flashEnabled,
+                        activeColor: AppColors.brightGreen,
+                        onChanged: (value) {
+                          setState(() {
+                            _flashEnabled = value;
+                          });
+                          _toggleFlash();
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+
+                  // Mode info
+                  Container(
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    decoration: BoxDecoration(
+                      color: AppColors.lightSurface,
+                      borderRadius: BorderRadius.circular(
+                        AppSpacing.cardBorderRadius,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Current Mode: $_cameraMode',
+                          style: AppTypography.label(),
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        Text(
+                          _getModeDescription(_cameraMode),
+                          style: AppTypography.bodySmall(
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.brightGreen,
+                        padding: const EdgeInsets.symmetric(
+                          vertical: AppSpacing.md,
+                        ),
+                      ),
+                      child: Text(
+                        'Close',
+                        style: AppTypography.label(
+                          color: AppColors.darkBackground,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.xxl),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  String _getModeDescription(String mode) {
+    switch (mode) {
+      case 'MACRO':
+        return 'Best for close-up shots of leaves and small details';
+      case 'AUTO':
+        return 'Automatic mode for general plant scanning';
+      case 'WIDE':
+        return 'Wide angle mode for full plant view';
+      default:
+        return '';
+    }
   }
 }

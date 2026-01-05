@@ -42,7 +42,7 @@ Atau jika menggunakan Android Studio:
 ### Sekarang (Sesuai Mockup):
 
 - Welcome section dengan user profile
-- Greeting card "Good Morning, Green Thumb"
+- Greeting card "Good Morning, Bangjoule - Yoga"
 - Stats cards: SAVED (12), ACTIVITY (5), PEND (2)
 - Quick Actions section dengan 3 cards:
   - Diagnose Disease (full width)

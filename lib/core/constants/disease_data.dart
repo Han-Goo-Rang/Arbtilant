@@ -43,7 +43,7 @@ const Map<String, dynamic> leafBlightData = {
   'severity': 'high',
   'category': 'fungal',
   'affected_plants': ['Tomat', 'Cabai', 'Kentang', 'Bawang', 'Padi'],
-  'image_url': 'assets/diseases/leaf_blight.jpg',
+  'image_url': 'assets/hawar_daun.jpg',
   'created_at': '2024-12-01T00:00:00Z',
   'updated_at': '2024-12-01T00:00:00Z',
 };
@@ -91,7 +91,7 @@ const Map<String, dynamic> leafSpotData = {
   'severity': 'medium',
   'category': 'fungal',
   'affected_plants': ['Tomat', 'Cabai', 'Selada', 'Bawang', 'Stroberi'],
-  'image_url': 'assets/diseases/leaf_spot.jpg',
+  'image_url': 'assets/bercak_daun.jpg',
   'created_at': '2024-12-01T00:00:00Z',
   'updated_at': '2024-12-01T00:00:00Z',
 };
@@ -142,7 +142,7 @@ const Map<String, dynamic> fruitRotData = {
   'severity': 'high',
   'category': 'fungal',
   'affected_plants': ['Tomat', 'Cabai', 'Stroberi', 'Mangga', 'Pisang'],
-  'image_url': 'assets/diseases/fruit_rot.jpg',
+  'image_url': 'assets/busuk_buah.jpg',
   'created_at': '2024-12-01T00:00:00Z',
   'updated_at': '2024-12-01T00:00:00Z',
 };

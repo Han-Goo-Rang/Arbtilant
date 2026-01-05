@@ -331,6 +331,8 @@ class _DiseaseDetailPageState extends State<DiseaseDetailPage> {
               onPressed: () {},
             ),
           ),
+
+          const SizedBox(height: AppSpacing.xxl),
         ],
       ),
     );

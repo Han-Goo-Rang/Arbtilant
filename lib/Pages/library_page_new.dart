@@ -294,30 +294,31 @@ class _LibraryPageNewState extends State<LibraryPageNew> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: AppColors.lightSurface,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(AppSpacing.cardBorderRadius),
-                    topRight: Radius.circular(AppSpacing.cardBorderRadius),
-                  ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(AppSpacing.cardBorderRadius),
+                  topRight: Radius.circular(AppSpacing.cardBorderRadius),
                 ),
-                child: disease.imageUrl != null && disease.imageUrl!.isNotEmpty
-                    ? Image.asset(
-                        disease.imageUrl!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Icon(
-                            Icons.image_not_supported,
-                            color: AppColors.textTertiary,
-                          );
-                        },
-                      )
-                    : Icon(
-                        Icons.image_not_supported,
-                        color: AppColors.textTertiary,
-                      ),
+                child: Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(color: AppColors.lightSurface),
+                  child:
+                      disease.imageUrl != null && disease.imageUrl!.isNotEmpty
+                      ? Image.asset(
+                          disease.imageUrl!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Icon(
+                              Icons.image_not_supported,
+                              color: AppColors.textTertiary,
+                            );
+                          },
+                        )
+                      : Icon(
+                          Icons.image_not_supported,
+                          color: AppColors.textTertiary,
+                        ),
+                ),
               ),
             ),
             Padding(

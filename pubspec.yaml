@@ -83,6 +83,9 @@ flutter:
     - assets/model/model.tflite
     - assets/logo.png
     - assets/virus.png
+    - assets/bercak_daun.jpg
+    - assets/busuk_buah.jpg
+    - assets/hawar_daun.jpg
 
   #   - images/a_dot_ham.jpeg
 

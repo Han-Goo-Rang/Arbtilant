@@ -47,7 +47,9 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             children: [
               _buildWelcomeSection(),
+              const SizedBox(height: AppSpacing.lg),
               _buildGreetingCard(),
+              const SizedBox(height: AppSpacing.lg),
               _buildStatsSection(),
               _buildQuickActionsSection(),
               const SizedBox(height: AppSpacing.lg),
@@ -79,7 +81,7 @@ class _HomePageState extends State<HomePage> {
                 style: AppTypography.bodySmall(color: AppColors.textSecondary),
               ),
               const SizedBox(height: AppSpacing.xs),
-              Text('Green Thumb', style: AppTypography.headline()),
+              Text('Bangjoule - Yoga', style: AppTypography.headline()),
             ],
           ),
           Container(
@@ -113,7 +115,7 @@ class _HomePageState extends State<HomePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Good Morning,\nGreen Thumb.',
+              'Good Morning,\nBangjoule - Yoga.',
               style: AppTypography.displayMedium(color: AppColors.textPrimary),
             ),
             const SizedBox(height: AppSpacing.sm),

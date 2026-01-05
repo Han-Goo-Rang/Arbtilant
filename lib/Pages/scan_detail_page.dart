@@ -440,7 +440,7 @@ class _ScanDetailPageState extends State<ScanDetailPage> {
                             onPressed: _deleteScan,
                           ),
                         ),
-                        const SizedBox(height: AppSpacing.lg),
+                        const SizedBox(height: AppSpacing.xxl),
                       ],
                     ),
                   ),
